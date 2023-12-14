@@ -742,7 +742,7 @@ int main()
         cout << endl
              << "===========MENU========" << endl
              << "1. ma hoa" << endl
-             << "0. exit" << endl
+             << "0. thoát" << endl
              << "lua chon: ";
         int m;
         cin >> m;
@@ -753,7 +753,7 @@ int main()
             maHoa();
         if (m < 0 || m > 2)
         {
-            cout << "stupid !" << endl;
+            cout << "Em thật là ngốc !" << endl;
         }
     }
     return 0;
