@@ -3,7 +3,7 @@
 #include <fstream>
 #include <cmath>
 using namespace std;
-string state[5][5];
+string state[5][5];     // chỉ lưu từ 1 tới 4
 string cipherkey[5][5]; // chỉ lưu từ 1 tới 4
 string sbox[17][17];
 string invsbox[17][17];
@@ -231,7 +231,7 @@ string nhanmbox(string temps, int x)
     // cout<<xtime(temps);
     temps = Get2From16(temps); // chuyen ve bin
     // cout<<temps<<endl;
-    string tempbit = "00011011";
+    string tempbit = "00011011"; // =H1b
     if (x == 1)
     {
         return temps;
@@ -249,6 +249,8 @@ string nhanmbox(string temps, int x)
         if (cc == '1')
         {
             // cout<"co";
+
+            // vì cc== 1 nên xor với H1b
             for (int i = 0; i <= 7; i++)
             {
                 if (temps[i] == tempbit[i])
@@ -344,7 +346,7 @@ string invnhanmbox(string temps, int x)
 void Nhap()
 {
     cout << "nhap text (length=16): ";
-    string s = "www.hust.edu.vn"; // day la text can ma hoa
+    string s = "www.truyenfull.com/"; // day la text can ma hoa
     while (s.length() < 16)
     { // vi ma hoa 128 nen minh them cho du 16 ki tu
         s = s + " ";
@@ -362,7 +364,7 @@ void Nhap()
     }
     //
     cout << "nhap key (length=16): ";
-    string sk = "matkhau6546"; // day la mat khau
+    string sk = "doctruyenkotot"; // day la mat khau
     while (sk.length() < 16)
     { // tuong tu nhu vay
         sk = sk + " ";
@@ -487,7 +489,7 @@ void show()
         cout << endl;
     }
 }
-void addRoundKey()
+void keyExpansion()
 {
     // get rcon cua vong
     string rconi[5];
@@ -691,7 +693,7 @@ void mixColumn()
         state[4][j] = da[4];
     }
 }
-void planTextAddKey()
+void addRoundKey()
 {
     for (int i = 1; i <= 4; i++)
     {
@@ -699,174 +701,6 @@ void planTextAddKey()
         {
             state[i][j] = Get16From2(Xorbin(Get2From16(state[i][j]), Get2From16(cipherkey[i][j])));
         }
-    }
-}
-// giai ma==============================
-void invplanTextAddKey()
-{
-    for (int i = 1; i <= 4; i++)
-    {
-        for (int j = 1; j <= 4; j++)
-        {
-            state[i][j] = Get16From2(Xorbin(Get2From16(state[i][j]), Get2From16(cipherkey[i][j])));
-        }
-    }
-}
-void invshiftRows()
-{
-    // dich hang 2
-    dichbyte(2);
-    dichbyte(2);
-    dichbyte(2);
-    // dich hang 3
-    dichbyte(3);
-    dichbyte(3);
-    // dich hang 4
-    dichbyte(4);
-}
-void invsubByte()
-{
-    for (int i = 1; i <= 4; i++)
-    {
-        for (int j = 1; j <= 4; j++)
-        {
-            // chuyen 16->10
-            string s = state[i][j];
-            int x, y;
-            if (s[0] >= '0' && s[0] <= '9')
-            {
-                x = s[0] - 48;
-            }
-            else
-            {
-                if (s[0] == 'a')
-                    x = 10;
-                if (s[0] == 'b')
-                    x = 11;
-                if (s[0] == 'c')
-                    x = 12;
-                if (s[0] == 'd')
-                    x = 13;
-                if (s[0] == 'e')
-                    x = 14;
-                if (s[0] == 'f')
-                    x = 15;
-            }
-            if (s[1] >= '0' && s[1] <= '9')
-            {
-                y = s[1] - 48;
-            }
-            else
-            {
-                if (s[1] == 'a')
-                    y = 10;
-                if (s[1] == 'b')
-                    y = 11;
-                if (s[1] == 'c')
-                    y = 12;
-                if (s[1] == 'd')
-                    y = 13;
-                if (s[1] == 'e')
-                    y = 14;
-                if (s[1] == 'f')
-                    y = 15;
-            }
-            // cout<<sbox[x][y]<<" ";
-            state[i][j] = invsbox[x][y]; // so sanh voi bang sbox
-        }
-    }
-}
-void invmixColumn()
-{
-    for (int j = 1; j <= 4; j++)
-    {
-        string temp[5]; // lay tung cot
-        temp[1] = state[1][j];
-        temp[2] = state[2][j];
-        temp[3] = state[3][j];
-        temp[4] = state[4][j];
-        string da[5];
-        for (int i = 1; i <= 4; i++)
-        { // lay tung hang trong mbox
-            string np1 = invnhanmbox(temp[1], invmbox[i][1]);
-            string np2 = invnhanmbox(temp[2], invmbox[i][2]);
-            string np3 = invnhanmbox(temp[3], invmbox[i][3]);
-            string np4 = invnhanmbox(temp[4], invmbox[i][4]);
-            // 1+2+3+4
-            da[i] = Get16From2(Xorbin(Xorbin(Xorbin(np1, np2), np3), np4));
-        }
-        state[1][j] = da[1];
-        state[2][j] = da[2];
-        state[3][j] = da[3];
-        state[4][j] = da[4];
-    }
-}
-void invaddRoundKey()
-{ // cot
-    // get rcon cua vong
-    string rconi[5];
-    getRcon(vong, rconi);
-    // c2->c4
-    for (int i = 4; i >= 2; i--)
-    {
-        for (int j = 1; j <= 4; j++)
-        {
-            cipherkey[j][i] = Get16From2(Xorbin(Get2From16(cipherkey[j][i]), Get2From16(cipherkey[j][i - 1])));
-        }
-    }
-    // c1
-    string temp[5];
-    temp[1] = cipherkey[2][4];
-    temp[2] = cipherkey[3][4];
-    temp[3] = cipherkey[4][4];
-    temp[4] = cipherkey[1][4];
-    // cout<<endl<<temp[1]<<" "<<temp[2]<<temp[3]<<temp[4]<<endl;;
-    // chuyen sang 16-> so
-    for (int i = 1; i <= 4; i++)
-    { // dong thu i
-        int x, y;
-        string s = temp[i];
-        if (s[0] >= '0' && s[0] <= '9')
-        {
-            x = s[0] - 48;
-        }
-        else
-        {
-            if (s[0] == 'a')
-                x = 10;
-            if (s[0] == 'b')
-                x = 11;
-            if (s[0] == 'c')
-                x = 12;
-            if (s[0] == 'd')
-                x = 13;
-            if (s[0] == 'e')
-                x = 14;
-            if (s[0] == 'f')
-                x = 15;
-        }
-        if (s[1] >= '0' && s[1] <= '9')
-        {
-            y = s[1] - 48;
-        }
-        else
-        {
-            if (s[1] == 'a')
-                y = 10;
-            if (s[1] == 'b')
-                y = 11;
-            if (s[1] == 'c')
-                y = 12;
-            if (s[1] == 'd')
-                y = 13;
-            if (s[1] == 'e')
-                y = 14;
-            if (s[1] == 'f')
-                y = 15;
-        }
-        // so sanh voi sbox
-        s = sbox[x][y];
-        cipherkey[i][1] = (Get16From2(Xorbin(Xorbin(Get2From16(rconi[i]), Get2From16(s)), Get2From16(cipherkey[i][1]))));
     }
 }
 void maHoa()
@@ -876,7 +710,7 @@ void maHoa()
     cout << endl
          << "==================MA HOA====================";
     vong = 1;
-    planTextAddKey();
+    addRoundKey();
     for (int i = 1; i <= 9; i++)
     {
         cout << endl
@@ -884,8 +718,8 @@ void maHoa()
         subByte();
         shiftRows();
         mixColumn();
+        keyExpansion();
         addRoundKey();
-        planTextAddKey();
         cout << i << endl;
         show();
         vong++;
@@ -895,55 +729,10 @@ void maHoa()
          << "vong 10" << endl;
     subByte();
     shiftRows();
+    keyExpansion();
     addRoundKey();
-    planTextAddKey();
     cout << "10" << endl;
     show();
-}
-void giaiMa()
-{
-    cout << "====================giai ma=====================" << endl;
-    string s1, s2;
-    vong = 10;
-    cout << "state(4x4): " << endl;
-    for (int i = 1; i <= 4; i++)
-    {
-        for (int j = 1; j <= 4; j++)
-        {
-            cin >> state[i][j];
-        }
-    }
-    cout << "key(4x4): " << endl;
-    for (int i = 1; i <= 4; i++)
-    {
-        for (int j = 1; j <= 4; j++)
-        {
-            cin >> cipherkey[i][j];
-        }
-    }
-    show();
-    // giai ma=======================
-    invplanTextAddKey();
-    invaddRoundKey();
-    invshiftRows();
-    invsubByte();
-    for (int i = 1; i <= 9; i++)
-    {
-        cout << endl
-             << "vong " << i << endl;
-        vong--;
-        invplanTextAddKey();
-        invaddRoundKey();
-        invmixColumn();
-        invshiftRows();
-        invsubByte();
-        show();
-    }
-    cout << endl
-         << "vong 10" << endl;
-    invplanTextAddKey();
-    show();
-    xuat();
 }
 int main()
 {
@@ -953,7 +742,6 @@ int main()
         cout << endl
              << "===========MENU========" << endl
              << "1. ma hoa" << endl
-             << "2. giai ma" << endl
              << "0. exit" << endl
              << "lua chon: ";
         int m;
@@ -963,8 +751,6 @@ int main()
             return 0;
         if (m == 1)
             maHoa();
-        if (m == 2)
-            giaiMa();
         if (m < 0 || m > 2)
         {
             cout << "stupid !" << endl;
